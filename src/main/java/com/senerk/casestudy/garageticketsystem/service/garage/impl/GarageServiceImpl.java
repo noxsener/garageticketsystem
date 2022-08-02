@@ -4,6 +4,8 @@ import com.senerk.casestudy.garageticketsystem.enums.VehicleType;
 import com.senerk.casestudy.garageticketsystem.models.ParkingRecord;
 import com.senerk.casestudy.garageticketsystem.models.ValidatorException;
 import com.senerk.casestudy.garageticketsystem.service.garage.GarageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -11,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class GarageServiceImpl implements GarageService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GarageServiceImpl.class);
 
     private static final Integer GARAGE_SIZE = 10;
 
@@ -29,6 +34,7 @@ public class GarageServiceImpl implements GarageService {
         }
         parkingRequest.setOccupiedParkingArea(suitableParkingSlot);
         parkingRecordList.add(parkingRequest);
+        logger.info(String.format("Vehicle Parked: %s %s %s in range %s", parkingRequest.getNumberPlate(), parkingRequest.getVehicleType().name(), parkingRequest.getColor(), suitableParkingSlot.stream().map(i -> i+"").collect(Collectors.joining(","))));
         return parkingRequest;
     }
 
@@ -36,8 +42,10 @@ public class GarageServiceImpl implements GarageService {
     public ParkingRecord vehicleLeaveParkArea(String numberPlate) throws ValidatorException {
         Optional<ParkingRecord> parkingRecordOptional = parkingRecordList.stream().filter(parkingRecordIndex -> parkingRecordIndex.getNumberPlate().equalsIgnoreCase(numberPlate)).findFirst();
         if(parkingRecordOptional.isPresent()) {
-            parkingRecordList.remove(parkingRecordOptional.get());
-            return parkingRecordOptional.get();
+            ParkingRecord parkingRecord = parkingRecordOptional.get();
+            parkingRecordList.remove(parkingRecord);
+            logger.info(String.format("Vehicle was left: %s %s %s in range %s", parkingRecord.getNumberPlate(), parkingRecord.getVehicleType().name(), parkingRecord.getColor(), parkingRecord.getOccupiedParkingArea().stream().map(i -> i+"").collect(Collectors.joining(","))));
+            return parkingRecord;
         } else {
             throw new ValidatorException(String.format("There is not found any vehicle with plate number %s in garage", numberPlate));
         }
@@ -64,6 +72,7 @@ public class GarageServiceImpl implements GarageService {
 
     @Override
     public List<ParkingRecord> getParkedVehicleList() {
+        logger.info("Requested Garage Park Records");
         return parkingRecordList;
     }
 

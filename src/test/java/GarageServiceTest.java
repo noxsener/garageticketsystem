@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GarageServiceTest {
 
-    private static Logger logger = LoggerFactory.getLogger(GarageServiceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(GarageServiceTest.class);
 
     @Autowired
     private GarageService garageService;
